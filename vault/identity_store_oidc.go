@@ -226,9 +226,13 @@ func oidcPaths(i *IdentityStore) []*framework.Path {
 					Type:        framework.TypeString,
 					Description: "Name of the role",
 				},
+				"metadata": {
+					Type:        framework.TypeKVPairs,
+					Description: `Metadata to be associated with the token.`,
+				},
 			},
 			Callbacks: map[logical.Operation]framework.OperationFunc{
-				logical.ReadOperation: i.pathOIDCGenerateToken,
+				logical.UpdateOperation: i.pathOIDCGenerateToken,
 			},
 			HelpSynopsis:    "Generate an OIDC token",
 			HelpDescription: "Generate an OIDC token against a configured role. The vault token used to call this path must have a corresponding entity.",
@@ -823,6 +827,15 @@ func (i *IdentityStore) pathOIDCGenerateToken(ctx context.Context, req *logical.
 	}
 
 	groups = append(groups, inheritedGroups...)
+
+	metadata, ok, err := d.GetOkErr("metadata")
+
+	if err != nil {
+		return logical.ErrorResponse(fmt.Sprintf("failed to parse metadata: %v", err)), nil
+	}
+	if ok {
+		e.Metadata = metadata.(map[string]string)
+	}
 
 	payload, err := idToken.generatePayload(i.Logger(), role.Template, e, groups)
 	if err != nil {

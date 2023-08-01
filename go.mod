@@ -58,7 +58,7 @@ require (
 	github.com/go-errors/errors v1.4.2
 	github.com/go-git/go-git/v5 v5.7.0
 	github.com/go-jose/go-jose/v3 v3.0.0
-	github.com/go-ldap/ldap/v3 v3.4.4
+	github.com/go-ldap/ldap/v3 v3.4.5
 	github.com/go-sql-driver/mysql v1.6.0
 	github.com/go-test/deep v1.1.0
 	github.com/go-zookeeper/zk v1.0.3
@@ -127,7 +127,7 @@ require (
 	github.com/hashicorp/vault-plugin-auth-cf v0.15.0
 	github.com/hashicorp/vault-plugin-auth-gcp v0.16.0
 	github.com/hashicorp/vault-plugin-auth-jwt v0.16.0
-	github.com/hashicorp/vault-plugin-auth-kerberos v0.10.0
+	github.com/hashicorp/vault-plugin-auth-kerberos v0.10.1-0.20230801002159-07805b0f8770
 	github.com/hashicorp/vault-plugin-auth-kubernetes v0.16.0
 	github.com/hashicorp/vault-plugin-auth-oci v0.14.0
 	github.com/hashicorp/vault-plugin-database-couchbase v0.9.2
@@ -151,7 +151,7 @@ require (
 	github.com/hashicorp/vault/api v1.9.2
 	github.com/hashicorp/vault/api/auth/approle v0.1.0
 	github.com/hashicorp/vault/api/auth/userpass v0.1.0
-	github.com/hashicorp/vault/sdk v0.9.2-0.20230530190758-08ee474850e0
+	github.com/hashicorp/vault/sdk v0.9.2
 	github.com/hashicorp/vault/vault/hcp_link/proto v0.0.0-20230201201504-b741fa893d77
 	github.com/influxdata/influxdb1-client v0.0.0-20200827194710-b269163b24ab
 	github.com/jackc/pgx/v4 v4.18.1

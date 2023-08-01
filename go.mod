@@ -124,7 +124,7 @@ require (
 	github.com/hashicorp/vault-plugin-auth-alicloud v0.15.0
 	github.com/hashicorp/vault-plugin-auth-azure v0.15.1
 	github.com/hashicorp/vault-plugin-auth-centrify v0.15.1
-	github.com/hashicorp/vault-plugin-auth-cf v0.15.0
+	github.com/hashicorp/vault-plugin-auth-cf v0.15.1-0.20230801002545-6afa58d4e523
 	github.com/hashicorp/vault-plugin-auth-gcp v0.16.0
 	github.com/hashicorp/vault-plugin-auth-jwt v0.16.0
 	github.com/hashicorp/vault-plugin-auth-kerberos v0.10.0
@@ -151,7 +151,7 @@ require (
 	github.com/hashicorp/vault/api v1.9.2
 	github.com/hashicorp/vault/api/auth/approle v0.1.0
 	github.com/hashicorp/vault/api/auth/userpass v0.1.0
-	github.com/hashicorp/vault/sdk v0.9.2-0.20230530190758-08ee474850e0
+	github.com/hashicorp/vault/sdk v0.9.2
 	github.com/hashicorp/vault/vault/hcp_link/proto v0.0.0-20230201201504-b741fa893d77
 	github.com/influxdata/influxdb1-client v0.0.0-20200827194710-b269163b24ab
 	github.com/jackc/pgx/v4 v4.18.1
@@ -205,14 +205,14 @@ require (
 	go.opentelemetry.io/otel/trace v1.14.0
 	go.uber.org/atomic v1.11.0
 	go.uber.org/goleak v1.2.1
-	golang.org/x/crypto v0.9.0
+	golang.org/x/crypto v0.11.0
 	golang.org/x/exp v0.0.0-20230522175609-2e198f4a06a1
-	golang.org/x/net v0.10.0
+	golang.org/x/net v0.12.0
 	golang.org/x/oauth2 v0.8.0
 	golang.org/x/sync v0.2.0
-	golang.org/x/sys v0.8.0
-	golang.org/x/term v0.8.0
-	golang.org/x/text v0.9.0
+	golang.org/x/sys v0.10.0
+	golang.org/x/term v0.10.0
+	golang.org/x/text v0.11.0
 	golang.org/x/tools v0.7.0
 	google.golang.org/api v0.124.0
 	google.golang.org/grpc v1.55.0
@@ -233,7 +233,6 @@ require (
 	cloud.google.com/go/compute/metadata v0.2.3 // indirect
 	cloud.google.com/go/iam v1.0.1 // indirect
 	cloud.google.com/go/kms v1.10.2 // indirect
-	code.cloudfoundry.org/gofileutils v0.0.0-20170111115228-4d0c80011a0f // indirect
 	github.com/99designs/go-keychain v0.0.0-20191008050251-8e49817e8af4 // indirect
 	github.com/99designs/keyring v1.2.2 // indirect
 	github.com/Azure/azure-pipeline-go v0.2.3 // indirect
@@ -299,7 +298,7 @@ require (
 	github.com/circonus-labs/circonus-gometrics v2.3.1+incompatible // indirect
 	github.com/circonus-labs/circonusllhist v0.1.3 // indirect
 	github.com/cloudflare/circl v1.3.3 // indirect
-	github.com/cloudfoundry-community/go-cfclient v0.0.0-20210823134051-721f0e559306 // indirect
+	github.com/cloudfoundry-community/go-cfclient v0.0.0-20220930021109-9c4e6c59ccf1 // indirect
 	github.com/cncf/udpa/go v0.0.0-20220112060539-c52dc94e7fbe // indirect
 	github.com/cncf/xds/go v0.0.0-20230310173818-32f1caf87195 // indirect
 	github.com/containerd/containerd v1.7.0 // indirect

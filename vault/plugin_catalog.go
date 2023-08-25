@@ -71,14 +71,15 @@ type PluginCatalog struct {
 // In particular, the PluginRunner struct has slices and a function which are not
 // comparable, so we need to transform it into a struct which is.
 type externalPluginsKey struct {
-	name    string
-	typ     consts.PluginType
-	version string
-	command string
-	args    string
-	env     string
-	sha256  string
-	builtin bool
+	name     string
+	typ      consts.PluginType
+	version  string
+	command  string
+	ociImage string
+	args     string
+	env      string
+	sha256   string
+	builtin  bool
 }
 
 func makeExternalPluginsKey(p *pluginutil.PluginRunner) (externalPluginsKey, error) {
@@ -93,14 +94,15 @@ func makeExternalPluginsKey(p *pluginutil.PluginRunner) (externalPluginsKey, err
 	}
 
 	return externalPluginsKey{
-		name:    p.Name,
-		typ:     p.Type,
-		version: p.Version,
-		command: p.Command,
-		args:    string(args),
-		env:     string(env),
-		sha256:  hex.EncodeToString(p.Sha256),
-		builtin: p.Builtin,
+		name:     p.Name,
+		typ:      p.Type,
+		version:  p.Version,
+		command:  p.Command,
+		ociImage: p.OCIImage,
+		args:     string(args),
+		env:      string(env),
+		sha256:   hex.EncodeToString(p.Sha256),
+		builtin:  p.Builtin,
 	}, nil
 }
 
@@ -152,6 +154,9 @@ func wrapFactoryCheckPerms(core *Core, f logical.Factory) logical.Factory {
 		}
 		if plugin == nil {
 			return nil, fmt.Errorf("failed to find %s in plugin catalog", pluginDescription)
+		}
+		if plugin.Command == "" {
+			return f(ctx, conf)
 		}
 
 		command, err := filepath.Rel(core.pluginCatalog.directory, plugin.Command)
@@ -893,34 +898,39 @@ func (c *PluginCatalog) Set(ctx context.Context, plugin pluginutil.SetPluginInpu
 }
 
 func (c *PluginCatalog) setInternal(ctx context.Context, plugin pluginutil.SetPluginInput) (*pluginutil.PluginRunner, error) {
-	// Best effort check to make sure the command isn't breaking out of the
-	// configured plugin directory.
-	commandFull := filepath.Join(c.directory, plugin.Command)
-	sym, err := filepath.EvalSymlinks(commandFull)
-	if err != nil {
-		return nil, fmt.Errorf("error while validating the command path: %w", err)
-	}
-	symAbs, err := filepath.Abs(filepath.Dir(sym))
-	if err != nil {
-		return nil, fmt.Errorf("error while validating the command path: %w", err)
-	}
+	var commandFull string
+	if plugin.Command != "" {
+		// Best effort check to make sure the command isn't breaking out of the
+		// configured plugin directory.
+		commandFull = filepath.Join(c.directory, plugin.Command)
+		sym, err := filepath.EvalSymlinks(commandFull)
+		if err != nil {
+			return nil, fmt.Errorf("error while validating the command path: %w", err)
+		}
+		symAbs, err := filepath.Abs(filepath.Dir(sym))
+		if err != nil {
+			return nil, fmt.Errorf("error while validating the command path: %w", err)
+		}
 
-	if symAbs != c.directory {
-		return nil, errors.New("cannot execute files outside of configured plugin directory")
+		if symAbs != c.directory {
+			return nil, errors.New("cannot execute files outside of configured plugin directory")
+		}
 	}
 
 	// entryTmp should only be used for the below type and version checks, it uses the
 	// full command instead of the relative command.
 	entryTmp := &pluginutil.PluginRunner{
-		Name:    plugin.Name,
-		Command: commandFull,
-		Args:    plugin.Args,
-		Env:     plugin.Env,
-		Sha256:  plugin.Sha256,
-		Builtin: false,
+		Name:     plugin.Name,
+		Command:  commandFull,
+		OCIImage: plugin.OCIImage,
+		Args:     plugin.Args,
+		Env:      plugin.Env,
+		Sha256:   plugin.Sha256,
+		Builtin:  false,
 	}
 	// If the plugin type is unknown, we want to attempt to determine the type
 	if plugin.Type == consts.PluginTypeUnknown {
+		var err error
 		plugin.Type, err = c.getPluginTypeFromUnknown(ctx, entryTmp)
 		if err != nil {
 			return nil, err
@@ -956,14 +966,15 @@ func (c *PluginCatalog) setInternal(ctx context.Context, plugin pluginutil.SetPl
 	}
 
 	entry := &pluginutil.PluginRunner{
-		Name:    plugin.Name,
-		Type:    plugin.Type,
-		Version: plugin.Version,
-		Command: plugin.Command,
-		Args:    plugin.Args,
-		Env:     plugin.Env,
-		Sha256:  plugin.Sha256,
-		Builtin: false,
+		Name:     plugin.Name,
+		Type:     plugin.Type,
+		Version:  plugin.Version,
+		Command:  plugin.Command,
+		OCIImage: plugin.OCIImage,
+		Args:     plugin.Args,
+		Env:      plugin.Env,
+		Sha256:   plugin.Sha256,
+		Builtin:  false,
 	}
 
 	buf, err := json.Marshal(entry)

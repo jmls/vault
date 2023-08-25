@@ -544,10 +544,15 @@ func (b *SystemBackend) handlePluginCatalogUpdate(ctx context.Context, _ *logica
 	args := d.Get("args").([]string)
 	parts := strings.Split(command, " ")
 	if len(parts) <= 0 {
-		return logical.ErrorResponse("missing command value"), nil
+		if ociImage != "" {
+			command = ""
+		} else {
+			return logical.ErrorResponse("missing command value"), nil
+		}
 	} else if len(parts) > 1 && len(args) > 0 {
 		return logical.ErrorResponse("must not specify args in command and args field"), nil
 	} else if len(parts) > 1 {
+		command = parts[0]
 		args = parts[1:]
 	}
 
@@ -562,7 +567,7 @@ func (b *SystemBackend) handlePluginCatalogUpdate(ctx context.Context, _ *logica
 		Name:     pluginName,
 		Type:     pluginType,
 		Version:  pluginVersion,
-		Command:  parts[0],
+		Command:  command,
 		OCIImage: ociImage,
 		Args:     args,
 		Env:      env,

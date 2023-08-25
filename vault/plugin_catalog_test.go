@@ -171,7 +171,7 @@ func TestPluginCatalog_VersionedCRUD(t *testing.T) {
 	const name = "mysql-database-plugin"
 	const version = "1.0.0"
 	command := fmt.Sprintf("%s", filepath.Base(file.Name()))
-	err = core.pluginCatalog.Set(context.Background(), pluginutil.PluginRunner{
+	err = core.pluginCatalog.Set(context.Background(), pluginutil.SetPluginInput{
 		Name:    name,
 		Type:    consts.PluginTypeDatabase,
 		Version: version,
@@ -286,7 +286,7 @@ func TestPluginCatalog_List(t *testing.T) {
 	defer file.Close()
 
 	command := filepath.Base(file.Name())
-	err = core.pluginCatalog.Set(context.Background(), pluginutil.PluginRunner{
+	err = core.pluginCatalog.Set(context.Background(), pluginutil.SetPluginInput{
 		Name:    "mysql-database-plugin",
 		Type:    consts.PluginTypeDatabase,
 		Version: "",
@@ -300,7 +300,7 @@ func TestPluginCatalog_List(t *testing.T) {
 	}
 
 	// Set another plugin
-	err = core.pluginCatalog.Set(context.Background(), pluginutil.PluginRunner{
+	err = core.pluginCatalog.Set(context.Background(), pluginutil.SetPluginInput{
 		Name:    "aaaaaaa",
 		Type:    consts.PluginTypeDatabase,
 		Version: "",
@@ -373,7 +373,7 @@ func TestPluginCatalog_ListVersionedPlugins(t *testing.T) {
 	defer file.Close()
 
 	command := filepath.Base(file.Name())
-	err = core.pluginCatalog.Set(context.Background(), pluginutil.PluginRunner{
+	err = core.pluginCatalog.Set(context.Background(), pluginutil.SetPluginInput{
 		Name:    "mysql-database-plugin",
 		Type:    consts.PluginTypeDatabase,
 		Version: "",
@@ -387,7 +387,7 @@ func TestPluginCatalog_ListVersionedPlugins(t *testing.T) {
 	}
 
 	// Set another plugin, with version information
-	err = core.pluginCatalog.Set(context.Background(), pluginutil.PluginRunner{
+	err = core.pluginCatalog.Set(context.Background(), pluginutil.SetPluginInput{
 		Name:    "aaaaaaa",
 		Type:    consts.PluginTypeDatabase,
 		Version: "1.1.0",
@@ -488,7 +488,7 @@ func TestPluginCatalog_ListHandlesPluginNamesWithSlashes(t *testing.T) {
 		},
 	}
 	for _, entry := range pluginsToRegister {
-		err = core.pluginCatalog.Set(ctx, pluginutil.PluginRunner{
+		err = core.pluginCatalog.Set(ctx, pluginutil.SetPluginInput{
 			Name:    entry.Name,
 			Type:    consts.PluginTypeCredential,
 			Version: entry.Version,

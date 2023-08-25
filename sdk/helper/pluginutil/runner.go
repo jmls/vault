@@ -54,11 +54,26 @@ type PluginRunner struct {
 	Type           consts.PluginType           `json:"type" structs:"type"`
 	Version        string                      `json:"version" structs:"version"`
 	Command        string                      `json:"command" structs:"command"`
+	OCIImage       string                      `json:"oc_image" structs:"oci_image"`
 	Args           []string                    `json:"args" structs:"args"`
 	Env            []string                    `json:"env" structs:"env"`
 	Sha256         []byte                      `json:"sha256" structs:"sha256"`
 	Builtin        bool                        `json:"builtin" structs:"builtin"`
 	BuiltinFactory func() (interface{}, error) `json:"-" structs:"-"`
+}
+
+// SetPluginInput is only used as input for the plugin catalog's set methods.
+// We don't use the very similar PluginRunner struct to avoid confusion about
+// what's settable, which does not include the builtin fields.
+type SetPluginInput struct {
+	Name     string
+	Type     consts.PluginType
+	Version  string
+	Command  string
+	OCIImage string
+	Args     []string
+	Env      []string
+	Sha256   []byte
 }
 
 // Run takes a wrapper RunnerUtil instance along with the go-plugin parameters and

@@ -1951,6 +1951,11 @@ func (b *SystemBackend) pluginsCatalogCRUDPath() *framework.Path {
 								Type:     framework.TypeString,
 								Required: false,
 							},
+							"oci_image": {
+								Type:        framework.TypeString,
+								Description: strings.TrimSpace(sysHelp["plugin-catalog_oci_image"][0]),
+								Required:    false,
+							},
 						},
 					}},
 				},

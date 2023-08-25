@@ -528,12 +528,15 @@ func (b *SystemBackend) handlePluginCatalogUpdate(ctx context.Context, _ *logica
 	}
 
 	command := d.Get("command").(string)
-	if command == "" {
-		return logical.ErrorResponse("missing command value"), nil
+	ociImage := d.Get("oci_image").(string)
+	if command == "" && ociImage == "" {
+		return logical.ErrorResponse("must provide at least one of command or oci_image"), nil
 	}
 
-	if err = b.Core.CheckPluginPerms(command); err != nil {
-		return nil, err
+	if ociImage == "" {
+		if err = b.Core.CheckPluginPerms(command); err != nil {
+			return nil, err
+		}
 	}
 
 	// For backwards compatibility, also accept args as part of command. Don't
@@ -555,7 +558,16 @@ func (b *SystemBackend) handlePluginCatalogUpdate(ctx context.Context, _ *logica
 		return logical.ErrorResponse("Could not decode SHA-256 value from Hex"), err
 	}
 
-	err = b.Core.pluginCatalog.Set(ctx, pluginName, pluginType, pluginVersion, parts[0], args, env, sha256Bytes)
+	err = b.Core.pluginCatalog.Set(ctx, pluginutil.SetPluginInput{
+		Name:     pluginName,
+		Type:     pluginType,
+		Version:  pluginVersion,
+		Command:  parts[0],
+		OCIImage: ociImage,
+		Args:     args,
+		Env:      env,
+		Sha256:   sha256Bytes,
+	})
 	if err != nil {
 		if errors.Is(err, ErrPluginNotFound) || strings.HasPrefix(err.Error(), "plugin version mismatch") {
 			return logical.ErrorResponse(err.Error()), nil
@@ -5923,8 +5935,8 @@ This path responds to the following HTTP methods.
 		"",
 	},
 	"plugin-catalog_sha-256": {
-		`The SHA256 sum of the executable used in the
-command field. This should be HEX encoded.`,
+		`The SHA256 sum of the executable or container to be run.
+This should be HEX encoded.`,
 		"",
 	},
 	"plugin-catalog_command": {
@@ -5943,7 +5955,12 @@ Each entry is of the form "key=value".`,
 		"",
 	},
 	"plugin-catalog_version": {
-		"The semantic version of the plugin to use.",
+		"The semantic version of the plugin to use, or image tag if oci_image is provided.",
+		"",
+	},
+	"plugin-catalog_oci_image": {
+		`The name of the OCI image to be run, without the tag or SHA256.
+Must already be present on the machine, and version must be provided.`,
 		"",
 	},
 	"leases": {

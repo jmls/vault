@@ -60,7 +60,11 @@ func rateLimitQuotaWrapping(handler http.Handler, core *vault.Core) http.Handler
 		}
 		r.Body = ioutil.NopCloser(bytes.NewBuffer(bodyBytes))
 
-		role := core.DetermineRoleFromLoginRequestFromBytes(mountPath, bodyBytes, r.Context())
+		role, err := core.DetermineRoleFromLoginRequestFromBytes(r.Context(), mountPath, bodyBytes)
+		if err != nil {
+			core.Logger().Error("failed to apply quota", "path", path, "error", err)
+			respondError(w, http.StatusUnprocessableEntity, err)
+		}
 
 		// add an entry to the context to prevent recalculating request role unnecessarily
 		r = r.WithContext(context.WithValue(r.Context(), logical.CtxKeyRequestRole{}, role))

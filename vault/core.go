@@ -3938,26 +3938,27 @@ func (c *Core) LoadNodeID() (string, error) {
 
 // DetermineRoleFromLoginRequestFromBytes will determine the role that should be applied to a quota for a given
 // login request, accepting a byte payload
-func (c *Core) DetermineRoleFromLoginRequestFromBytes(mountPoint string, payload []byte, ctx context.Context) string {
+func (c *Core) DetermineRoleFromLoginRequestFromBytes(ctx context.Context, mountPoint string, payload []byte) (string, error) {
 	data := make(map[string]interface{})
 	err := jsonutil.DecodeJSON(payload, &data)
 	if err != nil {
 		// Cannot discern a role from a request we cannot parse
-		return ""
+		return "", err
 	}
 
-	return c.DetermineRoleFromLoginRequest(mountPoint, data, ctx)
+	role, err := c.DetermineRoleFromLoginRequest(ctx, mountPoint, data)
+	return role, err
 }
 
 // DetermineRoleFromLoginRequest will determine the role that should be applied to a quota for a given
 // login request
-func (c *Core) DetermineRoleFromLoginRequest(mountPoint string, data map[string]interface{}, ctx context.Context) string {
+func (c *Core) DetermineRoleFromLoginRequest(ctx context.Context, mountPoint string, data map[string]interface{}) (string, error) {
 	c.authLock.RLock()
 	defer c.authLock.RUnlock()
 	matchingBackend := c.router.MatchingBackend(ctx, mountPoint)
 	if matchingBackend == nil || matchingBackend.Type() != logical.TypeCredential {
 		// Role based quotas do not apply to this request
-		return ""
+		return "", nil
 	}
 
 	resp, err := matchingBackend.HandleRequest(ctx, &logical.Request{
@@ -3967,10 +3968,16 @@ func (c *Core) DetermineRoleFromLoginRequest(mountPoint string, data map[string]
 		Data:       data,
 		Storage:    c.router.MatchingStorageByAPIPath(ctx, mountPoint+"login"),
 	})
-	if err != nil || resp.Data["role"] == nil {
-		return ""
+	if err != nil {
+		return "", err
 	}
-	return resp.Data["role"].(string)
+
+	role, ok := resp.Data["role"].(string)
+	if !ok {
+		return "", fmt.Errorf("no role associated with login request")
+	}
+
+	return role, nil
 }
 
 // aliasNameFromLoginRequest will determine the aliasName from the login Request

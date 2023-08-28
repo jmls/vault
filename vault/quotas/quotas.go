@@ -488,6 +488,33 @@ func (m *Manager) QueryQuota(req *Request) (Quota, error) {
 	return m.queryQuota(nil, req)
 }
 
+// QueryRoleQuotas checks if there's a role based quota for this req
+func (m *Manager) QueryRoleQuotas(req *Request) (bool, error) {
+	m.dbAndCacheLock.RLock()
+	defer m.dbAndCacheLock.RUnlock()
+
+	txn := m.db.Txn(false)
+
+	// ns would have been made non-empty during insertion. Use non-empty
+	// value during query as well.
+	if req.NamespacePath == "" {
+		req.NamespacePath = "root"
+	}
+
+	// Check for any role-based quota matching the namespace/mount path.
+	for _, qType := range quotaTypes() {
+		quota, err := txn.First(qType, indexNamespaceMount, req.NamespacePath, req.MountPath, false, true)
+		if err != nil {
+			return false, err
+		}
+		if quota != nil {
+			return true, nil
+		}
+
+	}
+	return false, nil
+}
+
 // queryQuota returns the quota rule that is applicable for the given request. It
 // queries all the quota rules that are defined against request values and finds
 // the quota rule that takes priority.

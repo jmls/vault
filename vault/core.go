@@ -3946,8 +3946,7 @@ func (c *Core) DetermineRoleFromLoginRequestFromBytes(ctx context.Context, mount
 		return "", err
 	}
 
-	role, err := c.DetermineRoleFromLoginRequest(ctx, mountPoint, data)
-	return role, err
+	return c.DetermineRoleFromLoginRequest(ctx, mountPoint, data)
 }
 
 // DetermineRoleFromLoginRequest will determine the role that should be applied to a quota for a given
@@ -3978,6 +3977,14 @@ func (c *Core) DetermineRoleFromLoginRequest(ctx context.Context, mountPoint str
 	}
 
 	return role, nil
+}
+
+func (c *Core) RoleBasedQuotasEnabled(ctx context.Context, req *quotas.Request) (bool, error) {
+	if c.quotaManager == nil {
+		return false, nil
+	}
+
+	return c.quotaManager.QueryRoleQuotas(req)
 }
 
 // aliasNameFromLoginRequest will determine the aliasName from the login Request

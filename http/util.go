@@ -60,23 +60,34 @@ func rateLimitQuotaWrapping(handler http.Handler, core *vault.Core) http.Handler
 		}
 		r.Body = ioutil.NopCloser(bytes.NewBuffer(bodyBytes))
 
-		role, err := core.DetermineRoleFromLoginRequestFromBytes(r.Context(), mountPath, bodyBytes)
-		if err != nil {
-			core.Logger().Error("failed to apply quota", "path", path, "error", err)
-			respondError(w, http.StatusUnprocessableEntity, err)
-		}
-
-		// add an entry to the context to prevent recalculating request role unnecessarily
-		r = r.WithContext(context.WithValue(r.Context(), logical.CtxKeyRequestRole{}, role))
-
-		quotaResp, err := core.ApplyRateLimitQuota(r.Context(), &quotas.Request{
+		quotaReq := &quotas.Request{
 			Type:          quotas.TypeRateLimit,
 			Path:          path,
 			MountPath:     mountPath,
-			Role:          role,
 			NamespacePath: ns.Path,
 			ClientAddress: parseRemoteIPAddress(r),
-		})
+		}
+		enabled, err := core.RoleBasedQuotasEnabled(r.Context(), quotaReq)
+		if err != nil {
+			core.Logger().Error("failed to lookup quotas", "path", path, "error", err)
+			respondError(w, http.StatusUnprocessableEntity, err)
+			return
+		}
+
+		// If ANY role-based quotas are enabled, just do the role resolution once here.
+		if enabled {
+			role, err := core.DetermineRoleFromLoginRequestFromBytes(r.Context(), mountPath, bodyBytes)
+			if err != nil {
+				core.Logger().Error("failed to resolve role", "path", path, "error", err)
+				respondError(w, http.StatusUnprocessableEntity, err)
+			}
+
+			// add an entry to the context to prevent recalculating request role unnecessarily
+			r = r.WithContext(context.WithValue(r.Context(), logical.CtxKeyRequestRole{}, role))
+			quotaReq.Role = role
+		}
+
+		quotaResp, err := core.ApplyRateLimitQuota(r.Context(), quotaReq)
 		if err != nil {
 			core.Logger().Error("failed to apply quota", "path", path, "error", err)
 			respondError(w, http.StatusUnprocessableEntity, err)
